@@ -1,0 +1,25 @@
+VERTICES 5
+ROAD 0 1 8.0 H
+ROAD 1 2 12.0 L
+ROAD 2 3 6.0 L
+ROAD 3 0 20.0 H
+ROAD 2 4 25.0 L
+
+# 1. Start at system boot (Time = 0). Cache is generated.
+SYNC_CACHE 0
+
+# 2. Query at Time 5. No new traffic has occurred since Time 0 -> Triggers FAST-PATH Matrix Lookup
+QUERY_DIJKSTRA 0 2 5 CAR
+
+# 3. A massive traffic spike occurs at Time 10
+TRAFFIC 0 1 10 3.5
+
+# 4. Query at Time 12. The traffic happened AFTER our Time 0 cache sync -> Falls back to DYNAMIC Dijkstra
+QUERY_DIJKSTRA 0 2 12 CAR
+
+# 5. The background timer ticks! We run Floyd-Warshall again at Time 15 to bake in the traffic adjustments
+SYNC_CACHE 15
+
+# 6. Query at Time 18. Since the traffic jam (Time 10) happened BEFORE our latest sync (Time 15), 
+# it's now fully baked in! -> Triggers FAST-PATH Matrix Lookup again!
+QUERY_DIJKSTRA 0 2 18 CAR
